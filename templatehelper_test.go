@@ -1,65 +1,134 @@
 package templatehelper_test
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/northbright/templatehelper"
 )
 
-func ExampleParseFilesWithDelims() {
-	// Manual represents the manual of tex-go.
-	type Manual struct {
-		Title        string
-		Author       string
-		About        string
-		Installation string
-		ExampleCode  string
-	}
+// Manual represents the manual of templatehelper.
+type Manual struct {
+	Title        string
+	Author       string
+	About        string
+	Installation string
+	ExampleCode  string
+}
 
+var (
 	// Create a manual for templatehelper.
-	manual := Manual{
+	manual = Manual{
 		Title:        "templatehelper Manual",
 		Author:       "Frank Xu",
 		About:        "A Go Library provides helper functions for template package.",
 		Installation: `go get -u github.com/northbright/templatehelper`,
-		ExampleCode: `
-package main
-
-import (
-    "github.com/northbright/templatehelper"
-)
-`,
+		ExampleCode:  exampleCode,
 	}
+)
 
+func ExampleParseDirWithDelims() {
 	// Create and parse templates from .tex file.
 	// LaTex uses "{}" for command parameter syntax,
 	// which conflicts with default golang template delimiters("{{" and "}}")
 	// To use Golang template package to parse .tex file,
 	// we use new delimiters: "\{\{" and "\}\}" in the .tex template file.
-	filenames := []string{
-		"templates/manual.tex",
-		"templates/title.tex",
-		"templates/chapters/00-about.tex",
-		"templates/chapters/01-installation.tex",
-		"templates/chapters/02-usage.tex",
-	}
 
-	t, err := templatehelper.ParseFilesWithDelims("\\{\\{", "\\}\\}", filenames...)
+	dir := "templates/latex"
+	tmpls, err := templatehelper.ParseDirWithDelims(dir, ".tex", "\\{\\{", "\\}\\}")
 	if err != nil {
-		log.Printf("ParseFilesWithDelims() error: %v", err)
+		log.Printf("ParseDirWithDelims() error: %v", err)
 		return
 	}
 
-	tmpls := t.Templates()
+	if len(tmpls) == 0 {
+		log.Printf("No template parsed")
+		return
+	}
+
+	// List the parsed temlates.
+	fmt.Printf("Parsed templates:\n")
 	for _, tmpl := range tmpls {
-		tmpl.Execute(os.Stdout, manual)
+		fmt.Printf("%v\n", tmpl.Name())
 	}
 
-	if err := t.Execute(os.Stdout, manual); err != nil {
-		log.Printf("t.Execute() error: %v", err)
-		return
+	// Execute the templates.
+	for _, tmpl := range tmpls {
+		log.Printf("execute template: %v\n", tmpl.Name())
+		tmpl.Execute(os.Stderr, manual)
 	}
 
 	// Output:
+	//Parsed templates:
+	//templates/latex/chapters/00-about.tex
+	//templates/latex/chapters/01-installation.tex
+	//templates/latex/chapters/02-usage.tex
+	//templates/latex/manual.tex
+	//templates/latex/title.tex
 }
+
+func ExampleParseDir() {
+	dir := "templates/markdown"
+	tmpls, err := templatehelper.ParseDir(dir, ".md")
+	if err != nil {
+		log.Printf("ParseDir() error: %v", err)
+	}
+
+	if len(tmpls) == 0 {
+		log.Printf("No template parsed")
+		return
+	}
+
+	// List the parsed temlates.
+	fmt.Printf("Parsed templates:\n")
+	for _, tmpl := range tmpls {
+		fmt.Printf("%v\n", tmpl.Name())
+	}
+
+	// Execute the templates.
+	for _, tmpl := range tmpls {
+		log.Printf("execute template: %v\n", tmpl.Name())
+		tmpl.Execute(os.Stderr, manual)
+	}
+
+	// Output:
+	//Parsed templates:
+	//templates/markdown/chapters/00-about.md
+	//templates/markdown/chapters/01-installation.md
+	//templates/markdown/chapters/02-usage.md
+	//templates/markdown/title.md
+}
+
+var (
+	exampleCode = `
+package main
+
+import (
+        "fmt"
+
+        "github.com/northbright/templatehelper"
+)
+
+func main() {
+        dir := "templates/markdown"
+        tmpls, err := templatehelper.ParseDir(dir, ".md")
+        if err != nil {
+                fmt.Printf("ParseDir() error: %%v\n", err)
+        }
+
+        // List the parsed temlates.
+        fmt.Printf("Parsed templates:\n")
+        for _, tmpl := range tmpls {
+                fmt.Printf("%%v\n", tmpl.Name())
+        }
+
+        // Output:
+        //Parsed templates:
+        //templates/markdown/chapters/00-about.md
+        //templates/markdown/chapters/01-installation.md
+        //templates/markdown/chapters/02-usage.md
+        //templates/markdown/title.md
+}
+`
+)
