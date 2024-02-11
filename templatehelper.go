@@ -81,7 +81,7 @@ func ParseDirWithDelims(dir, ext, leftDelim, rightDelim string) ([]*template.Tem
 	return tmpls, nil
 }
 
-// ParseDirWithDelims parses all template files in the given dir and subdirs recursively.
+// ParseDir parses all template files in the given dir and subdirs recursively.
 // It returns a slice contains parsed templates.
 // The name of each parsed template is set to the relative path of the template file.
 // The path contains the "dir" argument as a prefix.
