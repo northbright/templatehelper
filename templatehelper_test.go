@@ -115,13 +115,13 @@ func main() {
         dir := "templates/markdown"
         tmpls, err := templatehelper.ParseDir(dir, ".md")
         if err != nil {
-                fmt.Printf("ParseDir() error: %%v\n", err)
+                fmt.Printf("ParseDir() error: %v\n", err)
         }
 
         // List the parsed temlates.
         fmt.Printf("Parsed templates:\n")
         for _, tmpl := range tmpls {
-                fmt.Printf("%%v\n", strings.ReplaceAll(tmpl.Name(), string(os.PathSeparator), ">"))
+                fmt.Printf("%v\n", strings.ReplaceAll(tmpl.Name(), string(os.PathSeparator), ">"))
         }
 
         // Output:
