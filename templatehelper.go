@@ -1,7 +1,6 @@
 package templatehelper
 
 import (
-	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -29,53 +28,62 @@ func ParseDirWithDelims(dir, ext, leftDelim, rightDelim string) ([]*template.Tem
 	}
 	ext = strings.ToLower(ext)
 
-	// Walk dir.
-	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if d.IsDir() {
-			return nil
-		}
-
-		if strings.ToLower(filepath.Ext(path)) != ext {
-			return nil
-		}
-
-		absPath, err := filepath.Abs(path)
-		if err != nil {
-			return err
-		}
-
-		// Read the content from the template file.
-		data, err := os.ReadFile(absPath)
-		if err != nil {
-			return err
-		}
-
-		// Convert content from []byte to string via strings.Builder.
-		var b strings.Builder
-		if _, err = b.Write(data); err != nil {
-			return err
-		}
-
-		// Create a new empty template which name is path.
-		t := template.New(path)
-
-		// Set delimiters if need.
-		if leftDelim != "" && rightDelim != "" {
-			t = t.Delims(leftDelim, rightDelim)
-		}
-
-		// Parse the template.
-		if t, err = t.Parse(b.String()); err != nil {
-			return err
-		}
-
-		tmpls = append(tmpls, t)
-
-		return nil
-	})
-
+	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			// Parse templates in sub dir recursively.
+			subDir := filepath.Join(dir, entry.Name())
+
+			tmplsInSubDir, err := ParseDirWithDelims(subDir, ext, leftDelim, rightDelim)
+			if err != nil {
+				return nil, err
+			}
+
+			tmpls = append(tmpls, tmplsInSubDir...)
+		} else {
+			filename := entry.Name()
+
+			if strings.ToLower(filepath.Ext(filename)) != ext {
+				continue
+			}
+
+			path := filepath.Join(dir, filename)
+			absPath, err := filepath.Abs(path)
+			if err != nil {
+				return nil, err
+			}
+
+			// Read the content from the template file.
+			data, err := os.ReadFile(absPath)
+			if err != nil {
+				return nil, err
+			}
+
+			// Convert content from []byte to string via strings.Builder.
+			var b strings.Builder
+			if _, err = b.Write(data); err != nil {
+				return nil, err
+			}
+
+			// Create a new empty template which name is path.
+			t := template.New(path)
+
+			// Set delimiters if need.
+			if leftDelim != "" && rightDelim != "" {
+				t = t.Delims(leftDelim, rightDelim)
+			}
+
+			// Parse the template.
+			if t, err = t.Parse(b.String()); err != nil {
+				return nil, err
+			}
+
+			tmpls = append(tmpls, t)
+		}
 	}
 
 	return tmpls, nil
