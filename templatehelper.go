@@ -53,13 +53,9 @@ func ParseDirWithDelims(dir, ext, leftDelim, rightDelim string) ([]*template.Tem
 			}
 
 			path := filepath.Join(dir, filename)
-			absPath, err := filepath.Abs(path)
-			if err != nil {
-				return nil, err
-			}
 
 			// Read the content from the template file.
-			data, err := os.ReadFile(absPath)
+			data, err := os.ReadFile(path)
 			if err != nil {
 				return nil, err
 			}
