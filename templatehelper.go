@@ -3,6 +3,7 @@ package templatehelper
 import (
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -122,7 +123,7 @@ func ParseFSDirWithDelims(fsys fs.FS, dir, ext, leftDelim, rightDelim string) ([
 	for _, entry := range entries {
 		if entry.IsDir() {
 			// Parse templates in sub dir recursively.
-			subDir := filepath.Join(dir, entry.Name())
+			subDir := path.Join(dir, entry.Name())
 
 			tmplsInSubDir, err := ParseFSDirWithDelims(fsys, subDir, ext, leftDelim, rightDelim)
 			if err != nil {
@@ -137,7 +138,7 @@ func ParseFSDirWithDelims(fsys fs.FS, dir, ext, leftDelim, rightDelim string) ([
 				continue
 			}
 
-			path := filepath.Join(dir, filename)
+			path := path.Join(dir, filename)
 			if err != nil {
 				return nil, err
 			}
