@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/northbright/templatehelper/parsefsdir"
 )
@@ -68,7 +67,7 @@ func ExampleNew() {
 	// List the parsed templates.
 	fmt.Printf("parsed templates:\n")
 	for _, tmpl := range tmpls {
-		fmt.Printf("%v\n", strings.ReplaceAll(tmpl.Name(), string(os.PathSeparator), ">"))
+		fmt.Printf("%v\n", tmpl.Name())
 	}
 
 	// Execute the templates.
@@ -105,7 +104,7 @@ func ExampleNew() {
 	// List the parsed templates.
 	fmt.Printf("parsed templates:\n")
 	for _, tmpl := range tmpls {
-		fmt.Printf("%v\n", strings.ReplaceAll(tmpl.Name(), string(os.PathSeparator), ">"))
+		fmt.Printf("%v\n", tmpl.Name())
 	}
 
 	// Execute the templates.
@@ -116,14 +115,14 @@ func ExampleNew() {
 
 	// Output:
 	//parsed templates:
-	//templates>markdown>chapters>00-about.md
-	//templates>markdown>chapters>01-installation.md
-	//templates>markdown>chapters>02-usage.md
-	//templates>markdown>title.md
+	//templates/markdown/chapters/00-about.md
+	//templates/markdown/chapters/01-installation.md
+	//templates/markdown/chapters/02-usage.md
+	//templates/markdown/title.md
 	//parsed templates:
-	//templates>latex>chapters>00-about.tex
-	//templates>latex>chapters>01-installation.tex
-	//templates>latex>chapters>02-usage.tex
-	//templates>latex>manual.tex
-	//templates>latex>title.tex
+	//templates/latex/chapters/00-about.tex
+	//templates/latex/chapters/01-installation.tex
+	//templates/latex/chapters/02-usage.tex
+	//templates/latex/manual.tex
+	//templates/latex/title.tex
 }
