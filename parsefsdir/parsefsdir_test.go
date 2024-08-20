@@ -1,7 +1,6 @@
 package parsefsdir_test
 
 import (
-	"context"
 	"embed"
 	_ "embed"
 	"fmt"
@@ -48,11 +47,9 @@ func ExampleNew() {
 	// Create a Parser.
 	p := parsefsdir.New(embededFiles, dir, parsefsdir.Ext(ext))
 
-	ctx := context.Background()
-
 	log.Printf("p.Parse() starts...\ndir: %v\next: %v", dir, ext)
 	// Parse the templates in the dir.
-	tmpls, err := p.Parse(ctx)
+	tmpls, err := p.Parse()
 	if err != nil {
 		log.Printf("p.Parse() error: %v", err)
 		return
@@ -85,11 +82,9 @@ func ExampleNew() {
 	// because '{' and '}' already used by LaTex.
 	p = parsefsdir.New(embededFiles, dir, parsefsdir.Ext(ext), parsefsdir.Delims("\\{\\{", "\\}\\}"))
 
-	ctx = context.Background()
-
 	log.Printf("p.Parse() starts...\ndir: %v\next: %v", dir, ext)
 	// Parse the templates in the dir.
-	tmpls, err = p.Parse(ctx)
+	tmpls, err = p.Parse()
 	if err != nil {
 		log.Printf("p.Parse() error: %v", err)
 		return

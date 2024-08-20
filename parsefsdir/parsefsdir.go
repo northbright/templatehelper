@@ -1,9 +1,7 @@
 package parsefsdir
 
 import (
-	"context"
 	"io/fs"
-	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -60,79 +58,52 @@ func New(fsys fs.FS, dir string, options ...Option) *Parser {
 // It returns a slice contains parsed templates.
 // The name of each parsed template is set to the path of the template file.
 // The path contains the "dir" argument as a prefix.
-func (p *Parser) Parse(ctx context.Context) ([]*template.Template, error) {
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
+func (p *Parser) Parse() ([]*template.Template, error) {
+	var tmpls []*template.Template
 
-	default:
-		// Read entries of dir in fsys.
-		entries, err := fs.ReadDir(p.fsys, p.dir)
+	err := fs.WalkDir(p.fsys, p.dir, func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return nil
+		}
+
+		// Check file extension name.
+		filename := d.Name()
+		if strings.ToLower(filepath.Ext(filename)) != p.ext {
+			return nil
+		}
+
+		// Read the content from the template file.
+		data, err := fs.ReadFile(p.fsys, path)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		var tmpls []*template.Template
-		for _, entry := range entries {
-			if entry.IsDir() {
-				// dir is in a fs.FS:
-				// always use forward slash('/') as path separtor.
-				subDir := path.Join(p.dir, entry.Name())
-
-				// Parse templates in sub dir recursively.
-				parser := New(
-					p.fsys,
-					subDir,
-					Ext(p.ext),
-					Delims(p.leftDelim, p.rightDelim),
-				)
-				tmplsInSubDir, err := parser.Parse(ctx)
-				if err != nil {
-					return nil, err
-				}
-
-				tmpls = append(tmpls, tmplsInSubDir...)
-			} else {
-				filename := entry.Name()
-
-				if strings.ToLower(filepath.Ext(filename)) != p.ext {
-					continue
-				}
-
-				// dir is in a fs.FS:
-				// always use forward slash('/') as path separtor.
-				path := path.Join(p.dir, filename)
-
-				// Read the content from the template file.
-				data, err := fs.ReadFile(p.fsys, path)
-
-				if err != nil {
-					return nil, err
-				}
-
-				// Convert content from []byte to string via strings.Builder.
-				var b strings.Builder
-				if _, err = b.Write(data); err != nil {
-					return nil, err
-				}
-
-				// Create a new empty template which name is path.
-				t := template.New(path)
-
-				// Set delimiters if need.
-				if p.leftDelim != "" && p.rightDelim != "" {
-					t = t.Delims(p.leftDelim, p.rightDelim)
-				}
-
-				// Parse the template.
-				if t, err = t.Parse(b.String()); err != nil {
-					return nil, err
-				}
-
-				tmpls = append(tmpls, t)
-			}
+		// Convert content from []byte to string via strings.Builder.
+		var b strings.Builder
+		if _, err = b.Write(data); err != nil {
+			return err
 		}
 
-		return tmpls, nil
+		// Create a new empty template which name is path.
+		t := template.New(path)
+
+		// Set delimiters if need.
+		if p.leftDelim != "" && p.rightDelim != "" {
+			t = t.Delims(p.leftDelim, p.rightDelim)
+		}
+
+		// Parse the template.
+		if t, err = t.Parse(b.String()); err != nil {
+			return err
+		}
+
+		tmpls = append(tmpls, t)
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
+
+	return tmpls, nil
 }
