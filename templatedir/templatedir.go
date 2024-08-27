@@ -13,7 +13,8 @@ import (
 	"github.com/northbright/templatehelper"
 )
 
-// Dir represents the template dir which contains templates.
+// Dir represents the template dir which contains template files.
+// The default template file name extension is ".tmpl".
 type Dir struct {
 	path       string
 	ext        string
@@ -115,7 +116,7 @@ func (d *Dir) Parse() ([]*template.Template, error) {
 }
 
 // Render parses all template files in the dir and subdirs recursively then applies all templates to the specific data and write to the files in the output dir.
-// It uses template file name with extension name cut as the name of output file(e.g. src/xx.md.tmpl -> dst/xx.md).
+// It uses template file name without extension as the name of output file(e.g. src/xx.md.tmpl -> dst/xx.md).
 // For the files in the template dir whose extension is not ".tmpl" or specified extension(e.g. ".jpg" or other assets), it copies the files to the output dir.
 func (d *Dir) Render(outputDir string, data any) error {
 	err := filepath.WalkDir(d.path, func(path string, entry fs.DirEntry, err error) error {
