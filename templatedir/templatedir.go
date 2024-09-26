@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/northbright/copy/copyfile"
+	"github.com/northbright/cp"
 	"github.com/northbright/pathelper"
 	"github.com/northbright/templatehelper"
 )
@@ -134,8 +134,8 @@ func (d *Dir) Render(outputDir string, data any) error {
 			dst = filepath.Join(outputDir, dst)
 
 			// Copy file.
-			ctx := context.Background()
-			return copyfile.Do(ctx, path, dst)
+			_, err := cp.CopyFile(context.Background(), path, dst, 0)
+			return err
 		}
 
 		// Read the content from the template file.
