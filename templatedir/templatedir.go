@@ -134,7 +134,7 @@ func (d *Dir) Render(outputDir string, data any) error {
 			dst = filepath.Join(outputDir, dst)
 
 			// Copy file.
-			_, err := cp.CopyFile(context.Background(), path, dst, 0)
+			_, err := cp.CopyFile(context.Background(), path, dst)
 			return err
 		}
 
