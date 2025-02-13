@@ -1,6 +1,6 @@
 module github.com/northbright/templatehelper
 
-go 1.23.0
+go 1.24.0
 
 require (
 	github.com/northbright/cp v0.0.5
